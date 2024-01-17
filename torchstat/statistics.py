@@ -9,9 +9,9 @@ def get_parent_node(root_node, stat_node_name):
     assert isinstance(root_node, StatNode)
 
     node = root_node
-    names = stat_node_name.split('.')
+    names = stat_node_name.split(".")
     for i in range(len(names) - 1):
-        node_name = '.'.join(names[0:i+1])
+        node_name = ".".join(names[0 : i + 1])
         child_index = node.find_child_index(node_name)
         assert child_index != -1
         node = node.children[child_index]
@@ -22,12 +22,12 @@ def convert_leaf_modules_to_stat_tree(leaf_modules):
     assert isinstance(leaf_modules, OrderedDict)
 
     create_index = 1
-    root_node = StatNode(name='root', parent=None)
+    root_node = StatNode(name="root", parent=None)
     for leaf_module_name, leaf_module in leaf_modules.items():
-        names = leaf_module_name.split('.')
+        names = leaf_module_name.split(".")
         for i in range(len(names)):
             create_index += 1
-            stat_node_name = '.'.join(names[0:i+1])
+            stat_node_name = ".".join(names[0 : i + 1])
             parent_node = get_parent_node(root_node, stat_node_name)
             node = StatNode(name=stat_node_name, parent=parent_node)
             parent_node.add_child(node)

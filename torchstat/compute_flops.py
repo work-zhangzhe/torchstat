@@ -80,6 +80,7 @@ def compute_Linear_flops(module, inp, out):
     batch_size = inp.size()[0]
     return batch_size * inp.size()[1] * out.size()[1]
 
+
 def compute_Upsample_flops(module, inp, out):
     assert isinstance(module, nn.Upsample)
     output_size = out[0]

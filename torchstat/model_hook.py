@@ -30,14 +30,14 @@ class ModelHook(object):
         if len(list(module.children())) > 0:
             return
 
-        module.register_buffer('input_shape', torch.zeros(3).int())
-        module.register_buffer('output_shape', torch.zeros(3).int())
-        module.register_buffer('parameter_quantity', torch.zeros(1).int())
-        module.register_buffer('inference_memory', torch.zeros(1).long())
-        module.register_buffer('MAdd', torch.zeros(1).long())
-        module.register_buffer('duration', torch.zeros(1).float())
-        module.register_buffer('Flops', torch.zeros(1).long())
-        module.register_buffer('Memory', torch.zeros(2).long())
+        module.register_buffer("input_shape", torch.zeros(3).int())
+        module.register_buffer("output_shape", torch.zeros(3).int())
+        module.register_buffer("parameter_quantity", torch.zeros(1).int())
+        module.register_buffer("inference_memory", torch.zeros(1).long())
+        module.register_buffer("MAdd", torch.zeros(1).long())
+        module.register_buffer("duration", torch.zeros(1).float())
+        module.register_buffer("Flops", torch.zeros(1).long())
+        module.register_buffer("Memory", torch.zeros(2).long())
 
     def _sub_module_call_hook(self):
         def wrap_call(module, *input, **kwargs):
@@ -50,19 +50,23 @@ class ModelHook(object):
             output = self._origin_call[module.__class__](module, *input, **kwargs)
             end = time.time()
             module.duration = torch.from_numpy(
-                np.array([end - start], dtype=np.float32))
+                np.array([end - start], dtype=np.float32)
+            )
 
             module.input_shape = torch.from_numpy(
-                np.array(input[0].size()[1:], dtype=np.int32))
+                np.array(input[0].size()[1:], dtype=np.int32)
+            )
             module.output_shape = torch.from_numpy(
-                np.array(output.size()[1:], dtype=np.int32))
+                np.array(output.size()[1:], dtype=np.int32)
+            )
 
             parameter_quantity = 0
             # iterate through parameters and count num params
             for name, p in module._parameters.items():
-                parameter_quantity += (0 if p is None else torch.numel(p.data))
+                parameter_quantity += 0 if p is None else torch.numel(p.data)
             module.parameter_quantity = torch.from_numpy(
-                np.array([parameter_quantity], dtype=np.long))
+                np.array([parameter_quantity], dtype=np.int64)
+            )
 
             inference_memory = 1
             for s in output.size()[1:]:
@@ -70,7 +74,8 @@ class ModelHook(object):
             # memory += parameters_number  # exclude parameter memory
             inference_memory = inference_memory * 4 / (1024 ** 2)  # shown as MB unit
             module.inference_memory = torch.from_numpy(
-                np.array([inference_memory], dtype=np.float32))
+                np.array([inference_memory], dtype=np.float32)
+            )
 
             if len(input) == 1:
                 madd = compute_madd(module, input[0], output)
@@ -84,17 +89,18 @@ class ModelHook(object):
                 madd = 0
                 flops = 0
                 Memory = (0, 0)
-            module.MAdd = torch.from_numpy(
-                np.array([madd], dtype=np.int64))
-            module.Flops = torch.from_numpy(
-                np.array([flops], dtype=np.int64))
+            module.MAdd = torch.from_numpy(np.array([madd], dtype=np.int64))
+            module.Flops = torch.from_numpy(np.array([flops], dtype=np.int64))
             Memory = np.array(Memory, dtype=np.int32) * itemsize
             module.Memory = torch.from_numpy(Memory)
 
             return output
 
         for module in self._model.modules():
-            if len(list(module.children())) == 0 and module.__class__ not in self._origin_call:
+            if (
+                len(list(module.children())) == 0
+                and module.__class__ not in self._origin_call
+            ):
                 self._origin_call[module.__class__] = module.__class__.__call__
                 module.__class__.__call__ = wrap_call
 

@@ -23,6 +23,6 @@ class Net(nn.Module):
         return F.log_softmax(x, dim=1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     model = Net()
     stat(model, (3, 224, 224))
