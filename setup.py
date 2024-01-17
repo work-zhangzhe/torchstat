@@ -49,13 +49,4 @@ setup(
     author=author,
     url=url,
     install_requires=_requirements(),
-    tests_requires=_test_requirements(),
-    include_package_data=True,
-    license=license,
-    packages=find_packages(exclude=("tests")),
-    test_suite="tests",
-    entry_points="""
-    [console_scripts]
-    torchstat = torchstat.__main__:main
-    """,
 )
